@@ -19,14 +19,17 @@ class Message:
 
     def __str__(self):
         self.refresh()
-        ret = "%s:%d:%d:%d:%s:%s" % (self.header.hex(), self.len, self.id, self.ctrl, self.params.hex(), self.checksum)
+        ret = "%s:%d:%d:%d:%s:%s" % (self.header, self.len, ord(self.id), self.ctrl, self.params, ord(self.checksum))
         return ret.upper()
 
     def refresh(self):
         if self.checksum is None:
             self.checksum = self.id + self.ctrl
             for i in range(len(self.params)):
-                self.checksum += self.params[i]
+                if isinstance(self.params[i], int):
+                    self.checksum += self.params[i]
+                else:
+                    self.checksum += int(self.params[i].encode('hex'), 16)
             self.checksum = self.checksum % 256
             self.checksum = 2 ** 8 - self.checksum
             self.checksum = self.checksum % 256
